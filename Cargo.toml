@@ -1,0 +1,11 @@
+[package]
+name = "sqlite-jiff"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlite-loadable = "0.0.6-alpha.6"
+jiff = "0.1.0"
+
+[lib]
+crate-type=["lib", "staticlib", "cdylib"]

@@ -1,0 +1,21 @@
+[package]
+name = "sqlite-jiff"
+license = "MIT OR Apache"
+homepage = "https://alexgarcia.xyz/sqlite-jiff"
+repo = "https://github.com/asg017/sqlite-jiff"
+description = "A Datetime/timezone SQLite extension."
+authors = ["Alex Garcia"]
+git_tag_format = "v$VERSION"
+
+[targets]
+github_releases = {}
+sqlpkg = {}
+spm = {}
+
+pip = {}
+datasette = {}
+sqlite_utils = {}
+
+npm = {}
+
+gem = { module_name = "SqliteJiff" }

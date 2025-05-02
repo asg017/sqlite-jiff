@@ -1,0 +1,4 @@
+Source: ../snapshot.sql
+select jiff_date_era('0000-01-01');
+---
+'BCE'

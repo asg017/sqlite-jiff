@@ -1,0 +1,4 @@
+Source: ../snapshot.sql
+select jiff_add('2024-01-01', '1 day');
+---
+'2024-01-02'

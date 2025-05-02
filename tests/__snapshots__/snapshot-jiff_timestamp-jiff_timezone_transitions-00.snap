@@ -1,0 +1,66 @@
+Source: ../snapshot.sql
+select * 
+from jiff_timezone_transitions
+limit 10;
+---
+{
+	 timestamp: '2025-11-02T09:00:00Z'
+	 offset: '-08'
+	 dst: 0
+	 abbreviation: 'PST'
+}
+{
+	 timestamp: '2026-03-08T10:00:00Z'
+	 offset: '-07'
+	 dst: 1
+	 abbreviation: 'PDT'
+}
+{
+	 timestamp: '2026-11-01T09:00:00Z'
+	 offset: '-08'
+	 dst: 0
+	 abbreviation: 'PST'
+}
+{
+	 timestamp: '2027-03-14T10:00:00Z'
+	 offset: '-07'
+	 dst: 1
+	 abbreviation: 'PDT'
+}
+{
+	 timestamp: '2027-11-07T09:00:00Z'
+	 offset: '-08'
+	 dst: 0
+	 abbreviation: 'PST'
+}
+{
+	 timestamp: '2028-03-12T10:00:00Z'
+	 offset: '-07'
+	 dst: 1
+	 abbreviation: 'PDT'
+}
+{
+	 timestamp: '2028-11-05T09:00:00Z'
+	 offset: '-08'
+	 dst: 0
+	 abbreviation: 'PST'
+}
+{
+	 timestamp: '2029-03-11T10:00:00Z'
+	 offset: '-07'
+	 dst: 1
+	 abbreviation: 'PDT'
+}
+{
+	 timestamp: '2029-11-04T09:00:00Z'
+	 offset: '-08'
+	 dst: 0
+	 abbreviation: 'PST'
+}
+{
+	 timestamp: '2030-03-10T10:00:00Z'
+	 offset: '-07'
+	 dst: 1
+	 abbreviation: 'PDT'
+}
+

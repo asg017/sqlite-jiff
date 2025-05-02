@@ -1,0 +1,4 @@
+Source: ../snapshot.sql
+select jiff_date_month('2024-02-01');
+---
+2

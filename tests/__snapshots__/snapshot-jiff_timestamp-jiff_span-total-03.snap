@@ -1,0 +1,5 @@
+Source: ../snapshot.sql
+select jiff_span_total('2 minutes', 'month');
+---
+ERROR[1] SQL logic error
+using unit 'month' in a span or configuration requires that a relative reference time be given, but none was provided

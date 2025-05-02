@@ -1,0 +1,4 @@
+Source: ../snapshot.sql
+select jiff_time_round('12:59:00', 'hour');
+---
+'13:00:00'

@@ -1,8 +1,14 @@
-use jiff::Unit;
-use sqlite_loadable::prelude::*;
-use sqlite_loadable::{api, define_scalar_function, Result};
+mod date;
+mod datetime;
+mod jiff_datetime_series;
+mod timezone_transitions;
+mod span;
+mod time;
+mod timestamp;
+mod zoned;
 
-// jiff_version() -> 'v0.1.0'
+use sqlite_loadable::{api, define_scalar_function, prelude::*, Result};
+
 pub fn jiff_version(context: *mut sqlite3_context, _values: &[*mut sqlite3_value]) -> Result<()> {
     api::result_text(context, format!("v{}", env!("CARGO_PKG_VERSION")))?;
     Ok(())
@@ -19,27 +25,6 @@ Source: {}
             env!("GIT_HASH")
         ),
     )?;
-    Ok(())
-}
-
-use jiff::fmt::temporal::DateTimeParser;
-
-static PARSER: DateTimeParser = DateTimeParser::new();
-
-pub fn jiff_duration(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
-    let a = PARSER.parse_zoned(api::value_blob(&values[0])).unwrap();
-    let b = PARSER.parse_zoned(api::value_blob(&values[1])).unwrap();
-
-    let unit = match api::value_text(&values[2])? {
-        "milisecond" | "milliseconds" | "ms" => Unit::Millisecond,
-        "second" | "seconds" | "s" => Unit::Second,
-        "minutes" | "minute" => Unit::Minute,
-        "day" | "days" => Unit::Day,
-        "hour" | "hours" | "hr" => Unit::Hour,
-        _ => todo!(),
-    };
-    let span = &a - &b;
-    api::result_double(context, span.total(unit).unwrap());
     Ok(())
 }
 
@@ -60,6 +45,11 @@ pub fn sqlite3_jiff_init(db: *mut sqlite3) -> Result<()> {
         FunctionFlags::UTF8 | FunctionFlags::DETERMINISTIC,
     )?;
 
-    define_scalar_function(db, "jiff_duration", 3, jiff_duration, FunctionFlags::UTF8)?;
+    crate::time::register(db)?;
+    crate::date::register(db)?;
+    crate::datetime::register(db)?;
+    crate::timestamp::register(db)?;
+    crate::zoned::register(db)?;
+    crate::span::register(db)?;
     Ok(())
 }

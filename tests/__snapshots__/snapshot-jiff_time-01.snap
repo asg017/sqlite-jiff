@@ -1,0 +1,4 @@
+Source: ../snapshot.sql
+select jiff_time('23:59:59.999999');
+---
+'23:59:59.999999'

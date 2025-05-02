@@ -1,0 +1,36 @@
+Source: ../snapshot.sql
+select * 
+from jiff_datetime_series('2023-07-15 16:30:00', '-5 hours')
+limit 10;
+---
+{
+	 datetime: '2023-07-15T16:30:00'
+}
+{
+	 datetime: '2023-07-15T11:30:00'
+}
+{
+	 datetime: '2023-07-15T06:30:00'
+}
+{
+	 datetime: '2023-07-15T01:30:00'
+}
+{
+	 datetime: '2023-07-14T20:30:00'
+}
+{
+	 datetime: '2023-07-14T15:30:00'
+}
+{
+	 datetime: '2023-07-14T10:30:00'
+}
+{
+	 datetime: '2023-07-14T05:30:00'
+}
+{
+	 datetime: '2023-07-14T00:30:00'
+}
+{
+	 datetime: '2023-07-13T19:30:00'
+}
+

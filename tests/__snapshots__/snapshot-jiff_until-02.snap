@@ -1,0 +1,4 @@
+Source: ../snapshot.sql
+select jiff_until('2024-01-01 12:00:00', '2024-01-02 13:59:59.999');
+---
+'1 day, 1 hour, 59 minutes, 59 seconds, 999 milliseconds'

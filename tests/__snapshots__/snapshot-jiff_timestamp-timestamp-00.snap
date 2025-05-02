@@ -1,0 +1,4 @@
+Source: ../snapshot.sql
+select typeof(jiff_timestamp());
+---
+'text'

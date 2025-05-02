@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sqlite-loadable = "0.0.6-alpha.6"
+#sqlite-loadable = "0.0.6-alpha.6"
+sqlite-loadable = {git = "https://github.com/asg017/sqlite-loadable-rs.git", ref = "a4e2e69e41e72bfdf91b58e457e425f7a0618ca4"}
 jiff = "0.1.0"
 
 [lib]

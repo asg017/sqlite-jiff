@@ -1,0 +1,5 @@
+Source: ../snapshot.sql
+select jiff_date_year(NULL);
+---
+ERROR[1] SQL logic error
+failed to parse year in date "": expected four digit year (or leading sign for six digit year), but found end of input

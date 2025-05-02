@@ -1,0 +1,4 @@
+Source: ../snapshot.sql
+select jiff_timestamp('2024-01-01T23:57:00.123456Z');
+---
+'2024-01-01T23:57:00.123456Z'

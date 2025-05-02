@@ -1,0 +1,33 @@
+name: "Test"
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  build-extension:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            target: linux-x86_64
+          - os: ubuntu-22.04-arm
+            target: linux-aarch64
+          - os: macos-13
+            target: macos-x86_64
+          - os: macos-14
+            target: macos-aarch64
+          - os: windows-2019
+            target: windows-x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: make loadable
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sqlite-jiff-${{ matrix.target }}-extension
+          path: dist/*

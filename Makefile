@@ -107,6 +107,13 @@ clean:
 	rm -rf dist
 	cargo clean
 
+SOLITE=solite
+
+test-snap:
+	TZ=America/Los_Angeles $(SOLITE) snap tests/snapshot.sql
+
+.PHONY: test-snap
+
 publish-release:
 	./scripts/publish_release.sh
 

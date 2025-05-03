@@ -1,4 +1,0 @@
-Source: ../snapshot.sql
-select jiff_zoned('2024-11-02T01:59:59', 'system');
----
-'2024-11-02T01:59:59-07:00[America/Los_Angeles]'

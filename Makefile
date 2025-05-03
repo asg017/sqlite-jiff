@@ -81,16 +81,6 @@ $(TARGET_LOADABLE_RELEASE): $(prefix) $(shell find . -type f -name '*.rs')
 	cargo build --release $(CARGO_TARGET)
 	cp $(BUILT_LOCATION_RELEASE) $@
 
-Cargo.toml: VERSION
-	cargo set-version `cat VERSION`
-
-
-version:
-	make Cargo.toml
-
-format:
-	cargo fmt
-
 
 release: $(TARGET_LOADABLE_RELEASE) $(TARGET_STATIC_RELEASE)
 
@@ -114,8 +104,18 @@ test-snap:
 
 .PHONY: test-snap
 
+
+Cargo.toml: VERSION
+	cargo set-version `cat VERSION`
+
+version:
+	make Cargo.toml
+
 publish-release:
 	./scripts/publish_release.sh
+
+format:
+	cargo fmt
 
 .PHONY: clean \
 	test test-loadable \

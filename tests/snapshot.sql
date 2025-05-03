@@ -19,6 +19,7 @@ create temp table units as
 -- #region meta
 select regex_replace('(v)(.*)', jiff_version(), '${1}REDACTED');
 
+/*
 select 
   regex_replace(
     '(?<key>[^:]:)(.*)', 
@@ -26,6 +27,7 @@ select
     '$key REDACTED'
   ) as line_redacted
 from lines(jiff_debug());
+*/
 
 -- #endregion
 

@@ -63,13 +63,12 @@ jobs:
           node-version: "16"
           registry-url: "https://registry.npmjs.org"
       - run: |
-          npm publish --access public distx/npm/sqlite-tg-darwin-arm64.tar.gz
-          npm publish --access public distx/npm/sqlite-tg-darwin-x64.tar.gz
-          npm publish --access public distx/npm/sqlite-tg-linux-x64.tar.gz
-          npm publish --access public distx/npm/sqlite-tg-linux-arm64.tar.gz
-          npm publish --access public distx/npm/sqlite-tg-windows-x64.tar.gz
-          npm publish --access public distx/npm/sqlite-tg-wasm-demo.tar.gz
-          npm publish --access public distx/npm/sqlite-tg.tar.gz
+          npm publish --access public distx/npm/sqlite-jiff-darwin-arm64.tar.gz
+          npm publish --access public distx/npm/sqlite-jiff-darwin-x64.tar.gz
+          npm publish --access public distx/npm/sqlite-jiff-linux-x64.tar.gz
+          npm publish --access public distx/npm/sqlite-jiff-linux-arm64.tar.gz
+          npm publish --access public distx/npm/sqlite-jiff-windows-x64.tar.gz
+          npm publish --access public distx/npm/sqlite-jiff.tar.gz
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - uses: ruby/setup-ruby@v1

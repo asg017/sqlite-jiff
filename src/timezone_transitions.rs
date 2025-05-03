@@ -143,7 +143,7 @@ impl VTabCursor for TimezoneTransitionsCursor<'_> {
         &mut self,
         idx_num: c_int,
         _idx_str: Option<&str>,
-        values: &[*mut sqlite3_value],
+        _values: &[*mut sqlite3_value],
     ) -> Result<()> {
         let tz_name = "America/Los_Angeles"; //api::value_text(values.get(0).unwrap())?;
         let tz = TimeZone::get(tz_name).unwrap();

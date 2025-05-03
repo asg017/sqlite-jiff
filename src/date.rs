@@ -98,7 +98,7 @@ pub fn jiff_date(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -
                 .map_err(|_e| Error::new_message("TODO"))?;
             result_date(
                 context,
-                Date::new(year, month, day).map_err(|e| Error::new_message("asdf"))?,
+                Date::new(year, month, day).map_err(|_e| Error::new_message("asdf"))?,
             )?;
         }
         _ => unreachable!(""),

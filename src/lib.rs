@@ -1,6 +1,7 @@
 mod date;
 mod datetime;
 mod jiff_datetime_series;
+mod jiff_date_series;
 mod timezone_transitions;
 mod span;
 mod time;

@@ -25,13 +25,47 @@ fn jiff_timestamp(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) 
     Ok(())
 }
 
-pub fn jiff_timestamp_from_ms(
+
+fn jiff_timestamp_now(
+    context: *mut sqlite3_context,
+    _values: &[*mut sqlite3_value],
+) -> Result<()> {
+    result_timestamp(context, Timestamp::now())?;
+    Ok(())
+}
+
+pub fn jiff_timestamp_from_milliseconds(
     context: *mut sqlite3_context,
     values: &[*mut sqlite3_value],
 ) -> Result<()> {
     let ms = api::value_int64(&values[0]);
     let time = Timestamp::from_millisecond(ms).unwrap();
     api::result_text(context, time.to_string())?;
+    Ok(())
+}
+
+pub fn jiff_timestamp_as_seconds(
+    context: *mut sqlite3_context,
+    values: &[*mut sqlite3_value],
+) -> Result<()> {
+    let timestamp = timestamp_from_value(&values[0])?;
+    api::result_int64(context, timestamp.as_second());
+    Ok(())
+}
+pub fn jiff_timestamp_as_milliseconds(
+    context: *mut sqlite3_context,
+    values: &[*mut sqlite3_value],
+) -> Result<()> {
+    let timestamp = timestamp_from_value(&values[0])?;
+    api::result_int64(context, timestamp.as_millisecond());
+    Ok(())
+}
+pub fn jiff_timestamp_as_microseconds(
+    context: *mut sqlite3_context,
+    values: &[*mut sqlite3_value],
+) -> Result<()> {
+    let timestamp = timestamp_from_value(&values[0])?;
+    api::result_int64(context, timestamp.as_microsecond());
     Ok(())
 }
 
@@ -57,6 +91,7 @@ pub fn jiff_timestamp_strptime(
 pub fn register(db: *mut sqlite3) -> Result<()> {
     define_scalar_function(db, "jiff_timestamp", 0, jiff_timestamp, FunctionFlags::UTF8)?;
     define_scalar_function(db, "jiff_timestamp", 1, jiff_timestamp, FunctionFlags::UTF8)?;
+    define_scalar_function(db, "jiff_timestamp_now", 0, jiff_timestamp_now, FunctionFlags::UTF8)?;
 
     define_scalar_function(
         db,
@@ -67,10 +102,62 @@ pub fn register(db: *mut sqlite3) -> Result<()> {
     )?;
     define_scalar_function(
         db,
+        "jiff_timestamp_from_milliseconds",
+        1,
+        jiff_timestamp_from_milliseconds,
+        FunctionFlags::DETERMINISTIC,
+    )?;
+    define_scalar_function(
+        db,
         "jiff_timestamp_from_ms",
         1,
-        jiff_timestamp_from_ms,
+        jiff_timestamp_from_milliseconds,
         FunctionFlags::DETERMINISTIC,
+    )?;
+
+    define_scalar_function(
+        db,
+        "jiff_timestamp_as_seconds",
+        1,
+        jiff_timestamp_as_seconds,
+        FunctionFlags::UTF8 |  FunctionFlags::DETERMINISTIC,
+    )?;
+    define_scalar_function(
+        db,
+        "jiff_timestamp_as_s",
+        1,
+        jiff_timestamp_as_seconds,
+        FunctionFlags::UTF8 | FunctionFlags::DETERMINISTIC,
+    )?;
+
+    define_scalar_function(
+        db,
+        "jiff_timestamp_as_milliseconds",
+        1,
+        jiff_timestamp_as_milliseconds,
+        FunctionFlags::UTF8 | FunctionFlags::DETERMINISTIC,
+    )?;
+    define_scalar_function(
+        db,
+        "jiff_timestamp_as_ms",
+        1,
+        jiff_timestamp_as_milliseconds,
+        FunctionFlags::UTF8 | FunctionFlags::DETERMINISTIC,
+    )?;
+
+    define_scalar_function(
+        db,
+        "jiff_timestamp_as_microseconds",
+        1,
+        jiff_timestamp_as_microseconds,
+        FunctionFlags::UTF8 | FunctionFlags::DETERMINISTIC,
+    )?;
+    define_scalar_function(
+        db,
+        "jiff_timestamp_as_us",
+        1,
+        jiff_timestamp_as_microseconds,
+        FunctionFlags::UTF8 | FunctionFlags::DETERMINISTIC,
     )?;
 
     Ok(())

@@ -1,4 +1,4 @@
-use jiff::civil::{DateTime, DateTimeSeries};
+use jiff::civil::{Date, DateSeries};
 use jiff::Span;
 use sqlite_loadable::{
     api,
@@ -8,52 +8,40 @@ use sqlite_loadable::{
 use sqlite_loadable::{prelude::*, Error};
 use std::{mem, os::raw::c_int};
 
-use crate::datetime::{datetime_from_value, result_datetime};
+use crate::date::{date_from_value, result_date};
 use crate::span::span_from_value;
-use bitflags::bitflags;
 
-
-bitflags! {
-    pub struct Flags: i32 {
-        const VALUE_GT = 0b00000001;
-        const VALUE_GE = 0b00000010;
-        const VALUE_LT = 0b00000100;
-        const VALUE_LE = 0b00001000;
-        
-    }
-}
-
-static CREATE_SQL: &str = "CREATE TABLE x(datetime, start hidden, period hidden)";
+static CREATE_SQL: &str = "CREATE TABLE x(date, start hidden, period hidden)";
 enum Columns {
-    Datetime,
+    Date,
     Start,
     Period,
 }
 
 fn column(index: i32) -> Option<Columns> {
     match index {
-        0 => Some(Columns::Datetime),
+        0 => Some(Columns::Date),
         1 => Some(Columns::Start),
         2 => Some(Columns::Period),
         _ => None,
     }
 }
 #[repr(C)]
-pub struct DatetimeSeriesTable {
+pub struct DateSeriesTable {
     base: sqlite3_vtab,
 }
 
-impl<'vtab> VTab<'vtab> for DatetimeSeriesTable {
+impl<'vtab> VTab<'vtab> for DateSeriesTable {
     type Aux = ();
-    type Cursor = DatetimeSeriesCursor;
+    type Cursor = DateSeriesCursor;
 
     fn connect(
         _db: *mut sqlite3,
         _aux: Option<&()>,
         _args: VTabArguments,
-    ) -> Result<(String, DatetimeSeriesTable)> {
+    ) -> Result<(String, DateSeriesTable)> {
         let base: sqlite3_vtab = unsafe { mem::zeroed() };
-        let vtab = DatetimeSeriesTable { base };
+        let vtab = DateSeriesTable { base };
         // TODO db.config(VTabConfig::Innocuous)?;
         Ok((CREATE_SQL.to_owned(), vtab))
     }
@@ -86,7 +74,7 @@ impl<'vtab> VTab<'vtab> for DatetimeSeriesTable {
                         return Err(BestIndexError::Constraint);
                     }
                 }
-                Some(Columns::Datetime) => {
+                Some(Columns::Date) => {
                     if !constraint.usable() {
                       continue;
                         
@@ -132,8 +120,8 @@ impl<'vtab> VTab<'vtab> for DatetimeSeriesTable {
         Ok(())
     }
 
-    fn open(&mut self) -> Result<DatetimeSeriesCursor> {
-        Ok(DatetimeSeriesCursor::new())
+    fn open(&mut self) -> Result<DateSeriesCursor> {
+        Ok(DateSeriesCursor::new())
     }
 }
 
@@ -146,21 +134,21 @@ enum ConstraintType {
 }
 #[allow(dead_code)]
 struct Constraint {
-    value: DateTime,
+    value: Date,
     constraint_type: ConstraintType,
 }
 
 #[repr(C)]
-pub struct DatetimeSeriesCursor {
+pub struct DateSeriesCursor {
     base: sqlite3_vtab_cursor,
     rowid: i64,
-    iter: Option<DateTimeSeries>,
-    current: Option<DateTime>,
+    iter: Option<DateSeries>,
+    current: Option<Date>,
 }
-impl DatetimeSeriesCursor {
-    fn new<'vtab>() -> DatetimeSeriesCursor {
+impl DateSeriesCursor {
+    fn new<'vtab>() -> DateSeriesCursor {
         let base: sqlite3_vtab_cursor = unsafe { mem::zeroed() };
-        DatetimeSeriesCursor {
+        DateSeriesCursor {
             base,
             rowid: 0,
             iter: None,
@@ -170,19 +158,19 @@ impl DatetimeSeriesCursor {
 }
 
 
-impl VTabCursor for DatetimeSeriesCursor {
+impl VTabCursor for DateSeriesCursor {
     fn filter(
         &mut self,
         _idx_num: c_int,
         _idx_str: Option<&str>,
         values: &[*mut sqlite3_value],
     ) -> Result<()> {
-        let start: DateTime = datetime_from_value(&values[0])?;
+        let start = date_from_value(&values[0])?;
         let span: Span = span_from_value(&values[1])?;
         // TODO apply the GT/GE/LT/LE constraints passed in values[2..]
         // (keyed by idx_str), so best_index can set_omit them
         /*for (idx, extra) in values.iter().skip(2).enumerate() {
-            let x = datetime_from_value(extra)?;
+            let x = date_from_value(extra)?;
             match idx_str.unwrap().get(idx) {
               Some("A")  => {
                 let value = date
@@ -191,7 +179,7 @@ impl VTabCursor for DatetimeSeriesCursor {
         }*/
         if span.is_zero() {
             return Err(Error::new_message(
-                "jiff_datetime_series span cannot be zero",
+                "jiff_date_series span cannot be zero",
             ));
         }
         self.iter = Some(start.series(span));
@@ -217,9 +205,9 @@ impl VTabCursor for DatetimeSeriesCursor {
         match column(i) {
             Some(Columns::Start) => api::result_null(context),
             Some(Columns::Period) => api::result_null(context),
-            Some(Columns::Datetime) =>  {
-                if let Some(dt) = &self.current {
-                  result_datetime(context, *dt)?;
+            Some(Columns::Date) =>  {
+                if let Some(date) = &self.current {
+                  result_date(context, *date)?;
                 }
             },
             None => (),

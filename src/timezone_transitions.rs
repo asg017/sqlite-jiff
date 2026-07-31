@@ -97,7 +97,7 @@ impl<'vtab> VTab<'vtab> for TimezoneTransitionsTable {
         Ok(())
     }
 
-    fn open(&mut self) -> Result<TimezoneTransitionsCursor> {
+    fn open(&mut self) -> Result<TimezoneTransitionsCursor<'_>> {
         Ok(TimezoneTransitionsCursor::new())
     }
 }

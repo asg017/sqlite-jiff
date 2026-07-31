@@ -698,9 +698,11 @@ select jiff_version();
 
 #### `jiff_debug()` {#jiff_debug}
 
-Return build/version debug information about the extension.
+Return build/version debug information about the extension. The output
+embeds the build's git commit, so this example is illustrative and not
+executed by docgen.
 
-```sql
+```
 select jiff_debug();
 -- 'Version: v0.0.1-alpha.2
 -- Source: e728fd617e35aed4b9475e37fb07209a95bb7180

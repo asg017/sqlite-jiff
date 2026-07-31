@@ -59,9 +59,9 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "bitflags"
-version = "2.9.0"
+version = "2.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c8214115b7bf84099f1309324e63141d4c5d7cc26862f97a0a857dbefe165bd"
+checksum = "1b8e56985ec62d17e9c1001dc89c88ecd7dc08e47eba5ec7c29c7b5eeecde967"
 
 [[package]]
 name = "cexpr"
@@ -377,7 +377,7 @@ version = "0.38.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fdb5bc1ae2baa591800df16c9ca78619bf65c0488b41b96ccec5d11220d8c154"
 dependencies = [
- "bitflags 2.9.0",
+ "bitflags 2.9.1",
  "errno",
  "libc",
  "linux-raw-sys",
@@ -432,6 +432,7 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 name = "sqlite-jiff"
 version = "0.0.1-alpha.2"
 dependencies = [
+ "bitflags 2.9.1",
  "jiff",
  "sqlite-loadable",
 ]
@@ -439,7 +440,7 @@ dependencies = [
 [[package]]
 name = "sqlite-loadable"
 version = "0.0.6-alpha.6"
-source = "git+https://github.com/asg017/sqlite-loadable-rs.git#87c141fd0a0feac7328cc66dd605704022189195"
+source = "git+https://github.com/asg017/sqlite-loadable-rs.git?rev=87c141fd0a0feac7328cc66dd605704022189195#87c141fd0a0feac7328cc66dd605704022189195"
 dependencies = [
  "bitflags 1.3.2",
  "serde",
@@ -451,7 +452,7 @@ dependencies = [
 [[package]]
 name = "sqlite-loadable-macros"
 version = "0.0.3"
-source = "git+https://github.com/asg017/sqlite-loadable-rs.git#87c141fd0a0feac7328cc66dd605704022189195"
+source = "git+https://github.com/asg017/sqlite-loadable-rs.git?rev=87c141fd0a0feac7328cc66dd605704022189195#87c141fd0a0feac7328cc66dd605704022189195"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -461,7 +462,7 @@ dependencies = [
 [[package]]
 name = "sqlite3ext-sys"
 version = "0.0.1"
-source = "git+https://github.com/asg017/sqlite-loadable-rs.git#87c141fd0a0feac7328cc66dd605704022189195"
+source = "git+https://github.com/asg017/sqlite-loadable-rs.git?rev=87c141fd0a0feac7328cc66dd605704022189195#87c141fd0a0feac7328cc66dd605704022189195"
 dependencies = [
  "bindgen",
 ]

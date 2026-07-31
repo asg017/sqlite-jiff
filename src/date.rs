@@ -2,8 +2,10 @@ use jiff::{
     civil::{Date, Era},
     fmt::temporal::DateTimeParser,
 };
-use sqlite_loadable::{api, define_scalar_function, prelude::*, Error, Result};
+use sqlite_loadable::{api, define_scalar_function, define_table_function, prelude::*, Error, Result};
 use std::str::FromStr;
+
+use crate::jiff_date_series::DateSeriesTable;
 
 pub(crate) static DEFAULT_DATETIME_PARSER: DateTimeParser = DateTimeParser::new();
 
@@ -39,6 +41,20 @@ fn jiff_date_weekday(context: *mut sqlite3_context, values: &[*mut sqlite3_value
         jiff::civil::Weekday::Saturday => "Saturday",
         jiff::civil::Weekday::Sunday => "Sunday",
     })?;
+    Ok(())
+}
+fn jiff_date_weekday_idx(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
+    let date = jiff_date_from_value(&values[0])?;
+    let weekday = date.weekday();
+    api::result_int(context, match weekday {
+        jiff::civil::Weekday::Monday => 0,
+        jiff::civil::Weekday::Tuesday => 1,
+        jiff::civil::Weekday::Wednesday => 2,
+        jiff::civil::Weekday::Thursday => 3,
+        jiff::civil::Weekday::Friday => 4,
+        jiff::civil::Weekday::Saturday => 5,
+        jiff::civil::Weekday::Sunday => 6,
+    });
     Ok(())
 }
 
@@ -98,7 +114,7 @@ pub fn jiff_date(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -
                 .map_err(|_e| Error::new_message("TODO"))?;
             result_date(
                 context,
-                Date::new(year, month, day).map_err(|_e| Error::new_message("asdf"))?,
+                Date::new(year, month, day).map_err(|e| Error::new_message(format!("Invalid date: {e}")))?,
             )?;
         }
         _ => unreachable!(""),
@@ -119,6 +135,7 @@ pub fn jiff_date_day(context: *mut sqlite3_context, values: &[*mut sqlite3_value
     api::result_int(context, date_from_value(&values[0])?.day().into());
     Ok(())
 }
+
 pub fn jiff_date_era(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
     let (_, era) = date_from_value(&values[0])?.era_year();
     api::result_text(
@@ -216,6 +233,15 @@ pub fn register(db: *mut sqlite3) -> Result<()> {
         jiff_date_weekday,
         FunctionFlags::DETERMINISTIC,
     )?;
+    define_scalar_function(
+        db,
+        "jiff_date_weekday_idx",
+        1,
+        jiff_date_weekday_idx,
+        FunctionFlags::DETERMINISTIC,
+    )?;
+
+    define_table_function::<DateSeriesTable>(db, "jiff_date_series", None)?;
 
     Ok(())
 }

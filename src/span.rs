@@ -1,13 +1,24 @@
 use jiff::{
-    fmt::friendly::{Designator, Spacing, SpanPrinter},
-    Span, SpanRound, Unit,
+    fmt::friendly::{Designator, Spacing, SpanPrinter}, RoundMode, Span, SpanRound, Unit
 };
 use sqlite_loadable::{api, define_scalar_function, prelude::*, Error, Result};
 
 use crate::{
-    date::{date_from_value, result_date}, datetime::{datetime_from_value, result_datetime}, time::{jiff_time_from_value, result_time, time_from_value},
-    timestamp::timestamp_from_value, zoned::{jiff_zoned_from_value, result_zoned},
+    date::{date_from_value, result_date},
+    datetime::{datetime_from_value, result_datetime},
+    time::{jiff_time_from_value, result_time, time_from_value},
+    timestamp::timestamp_from_value,
+    zoned::{jiff_zoned_from_value, result_zoned},
 };
+
+pub fn span_from_value(value: &*mut sqlite3_value) -> Result<Span> {
+    let input = api::value_text(value)?;
+    let x = input.parse();
+    match x {
+        Ok(x) => Ok(x),
+        Err(e) => Err(Error::new_message(e.to_string())),
+    }
+}
 
 pub fn unit_from_value(value: &*mut sqlite3_value) -> Result<Unit> {
     let input = api::value_text(value)?;
@@ -22,8 +33,14 @@ pub fn unit_from_value(value: &*mut sqlite3_value) -> Result<Unit> {
         "week" | "weeks" => Ok(Unit::Week),
         "month" | "months" => Ok(Unit::Month),
         "year" | "years" => Ok(Unit::Year),
-        _ => Err(Error::new_message("Unknown unit")),
+        value => Err(Error::new_message(format!("Unknown unit {value}"))),
     }
+}
+
+fn jiff_span(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
+  let span = span_from_value(&values[0])?;
+  result_span(context, span)?;
+  Ok(())
 }
 
 fn jiff_span_format(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
@@ -36,10 +53,10 @@ fn jiff_span_format(context: *mut sqlite3_context, values: &[*mut sqlite3_value]
         printer = match key {
             "spacing" => {
                 let spacing = match api::value_text(&v)?.to_lowercase().as_str() {
-                    "between-units-and-designators" => Spacing::BetweenUnitsAndDesignators,
-                    "between-units" => Spacing::BetweenUnits,
                     "none" => Spacing::None,
-                    _ => return Err(Error::new_message("Unknown spacing")),
+                    "between-units" => Spacing::BetweenUnits,
+                    "between-units-and-designators" => Spacing::BetweenUnitsAndDesignators,
+                    value => return Err(Error::new_message(format!("Unknown spacing '{value}'"))),
                 };
                 printer.spacing(spacing)
             }
@@ -48,7 +65,7 @@ fn jiff_span_format(context: *mut sqlite3_context, values: &[*mut sqlite3_value]
                     "verbose" => Designator::Verbose,
                     "short" => Designator::Short,
                     "compact" => Designator::Compact,
-                    _ => return Err(Error::new_message("Unknown designator")),
+                    value => return Err(Error::new_message(format!("Unknown designator {value}"))),
                 };
                 printer.designator(designator)
             }
@@ -58,12 +75,16 @@ fn jiff_span_format(context: *mut sqlite3_context, values: &[*mut sqlite3_value]
                     "sign" => jiff::fmt::friendly::Direction::Sign,
                     "force-sign" => jiff::fmt::friendly::Direction::ForceSign,
                     "suffix" => jiff::fmt::friendly::Direction::Suffix,
-                    _ => return Err(Error::new_message("Unknown direction")),
+                    value => return Err(Error::new_message(format!("Unknown direction {value}"))),
                 };
                 printer.direction(direction)
             }
             "comma-after-designator" => printer.comma_after_designator(api::value_int(&v) == 1),
-            _ => todo!(),
+            key => {
+                return Err(Error::new_message(format!(
+                    "Unknown key for jiff_span_format: '{key}'"
+                )))
+            }
         }
     }
     let mut buf = String::new();
@@ -77,15 +98,6 @@ static SPAN_PRINTER: SpanPrinter = SpanPrinter::new()
     .comma_after_designator(true)
     .designator(Designator::Verbose);
 
-fn span_from_value(value: &*mut sqlite3_value) -> Result<Span> {
-    let input = api::value_text(value)?;
-    let x = input.parse();
-    match x {
-        Ok(x) => Ok(x),
-        Err(e) => Err(Error::new_message(e.to_string())),
-    }
-}
-
 fn result_span(context: *mut sqlite3_context, span: Span) -> Result<()> {
     let mut buf = String::new();
     SPAN_PRINTER.print_span(&span, &mut buf).unwrap();
@@ -94,16 +106,50 @@ fn result_span(context: *mut sqlite3_context, span: Span) -> Result<()> {
 }
 
 fn jiff_span_round(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
+    if values.is_empty() {
+        return Err(Error::new_message(
+            "jiff_span_round requires at least one argument",
+        ));
+    }
+
     let span = span_from_value(&values[0])?;
-    let mut round = SpanRound::new();
+    let mut options: SpanRound<'static> = SpanRound::new();
+    if values.len() == 2 {
+        let unit = unit_from_value(&values[1])?;
+        result_span(context, span.round(unit).unwrap())?;
+        return Ok(());
+    }
+    if values.len() % 2 != 1 {
+        return Err(Error::new_message(
+            "jiff_span_round() requires an even number of arguments after the span",
+        ));
+    }
+    if values.len() == 3 && api::value_type(&values[1]) == api::ValueType::Integer {
+        let x = api::value_int64(&values[1]);
+        let unit = unit_from_value(&values[2])?;
+        result_span(context, span.round((unit, x)).unwrap())?;
+        return Ok(());
+    }
+
     for pair in values[1..].iter().as_slice().chunks(2) {
         let k = pair[0];
         let v = pair[1];
         let key = api::value_text(&k)?;
-        round = match key {
-            "largest" => round.largest(unit_from_value(&v)?),
-            "smallest" => round.smallest(unit_from_value(&v)?),
-
+        options = match key {
+            "largest" => options.largest(unit_from_value(&v)?),
+            "smallest" => options.smallest(unit_from_value(&v)?),
+            "increment" => options.increment(api::value_int64(&v)),
+            "mode" => options.mode(roundmode_from_value(&v)?),
+            "relative" => {
+              // TODO support &Zoned here somehow??
+              if let Ok(datetime) = datetime_from_value(&v) {
+                  options.relative(datetime)
+              } else if let Ok(date) = date_from_value(&v) {
+                  options.relative(date)
+              } else {
+                  return Err(Error::new_message("Invalid value for 'relative' option"));
+              }
+            }
             k => {
                 return Err(Error::new_message(format!(
                     "Unknown key for jiff_span_round: '{k}'"
@@ -111,59 +157,65 @@ fn jiff_span_round(context: *mut sqlite3_context, values: &[*mut sqlite3_value])
             }
         }
     }
-    result_span(context, span.round(round).unwrap())?;
+    result_span(context, span.round(options).unwrap())?;
     Ok(())
 }
 
-
+fn roundmode_from_value(value: &*mut sqlite3_value) -> Result<RoundMode> {
+    let input = api::value_text(value)?;
+    match input.to_lowercase().as_str() {
+        "ceil" => Ok(RoundMode::Ceil),
+        "floor" => Ok(RoundMode::Floor),
+        "expand" => Ok(RoundMode::Expand),
+        "trunc" => Ok(RoundMode::Trunc),
+        "half-ceil" => Ok(RoundMode::HalfCeil),
+        "half-floor" => Ok(RoundMode::HalfFloor),
+        "half-expand" => Ok(RoundMode::HalfExpand),
+        "half-trunc" => Ok(RoundMode::HalfTrunc),
+        "half-even" => Ok(RoundMode::HalfEven),
+        value => Err(Error::new_message(format!("Unknown round mode {value}"))),
+    }
+}
 fn jiff_span_total(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
     // TODO:
     // - [ ] validate inputs
     // - [ ] (span, unit, date/datetime/zoned)
     // - [ ] (span, key1, value1, key2, ...)
     let span = span_from_value(&values[0])?;
-    if values.len() == 2 {
-      let unit = unit_from_value(&values[1])?;
-      let result = span.total(unit).map_err(|e| Error::new_message(e.to_string()))?;
+    let unit = unit_from_value(&values[1])?;
+    let result = if values.len() == 3 {
+    span
+          .total((unit, date_from_value(&values[2])?))
+          .map_err(|e| Error::new_message(e.to_string()))?
+    }else {
+        span
+          .total(unit)
+          .map_err(|e| Error::new_message(e.to_string()))?
+    };
       api::result_double(context, result);
-      return Ok(());
-    }
-    let mut round = SpanRound::new();
-    for pair in values[1..].iter().as_slice().chunks(2) {
-        let k = pair[0];
-        let v = pair[1];
-        let key = api::value_text(&k)?;
-        round = match key {
-            "largest" => round.largest(unit_from_value(&v)?),
-            "smallest" => round.smallest(unit_from_value(&v)?),
-
-            k => {
-                return Err(Error::new_message(format!(
-                    "Unknown key for jiff_span_round: '{k}'"
-                )))
-            }
-        }
-    }
-    result_span(context, span.round(round).unwrap())?;
+    
     Ok(())
 }
 
 fn jiff_add(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
-  let span = span_from_value(&values[1])?;
-  if let Ok(zoned) = jiff_zoned_from_value(&values[0]) {
-    result_zoned(context, zoned.saturating_add(span))?;
-    return Ok(());
-  }
-  if let Ok(datetime) = datetime_from_value(&values[0]) {
-    result_datetime(context, datetime.saturating_add(span))?;
-  }
-  if let Ok(date) = date_from_value(&values[0]) {
-    result_date(context, date.saturating_add(span))?;
-  }
-  if let Ok(time) = jiff_time_from_value(&values[0]) {
-    result_time(context, time.saturating_add(span))?;
-  }
-  Ok(())
+    let span = span_from_value(&values[1])?;
+    if let Ok(zoned) = jiff_zoned_from_value(&values[0]) {
+        result_zoned(context, zoned.saturating_add(span))?;
+        return Ok(());
+    }
+    if let Ok(datetime) = datetime_from_value(&values[0]) {
+        result_datetime(context, datetime.saturating_add(span))?;
+        return Ok(());
+    }
+    if let Ok(date) = date_from_value(&values[0]) {
+        result_date(context, date.saturating_add(span))?;
+        return Ok(());
+    }
+    if let Ok(time) = jiff_time_from_value(&values[0]) {
+        result_time(context, time.saturating_add(span))?;
+        return Ok(());
+    }
+    Ok(())
 }
 
 fn jiff_until(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> Result<()> {
@@ -293,6 +345,13 @@ fn jiff_since(context: *mut sqlite3_context, values: &[*mut sqlite3_value]) -> R
 pub fn register(db: *mut sqlite3) -> Result<()> {
     define_scalar_function(
         db,
+        "jiff_span",
+        1,
+        jiff_span,
+        FunctionFlags::DETERMINISTIC,
+    )?;
+    define_scalar_function(
+        db,
         "jiff_until",
         2,
         jiff_until,
@@ -305,13 +364,7 @@ pub fn register(db: *mut sqlite3) -> Result<()> {
         jiff_since,
         FunctionFlags::DETERMINISTIC,
     )?;
-    define_scalar_function(
-        db,
-        "jiff_add",
-        2,
-        jiff_add,
-        FunctionFlags::DETERMINISTIC,
-    )?;
+    define_scalar_function(db, "jiff_add", 2, jiff_add, FunctionFlags::DETERMINISTIC)?;
 
     define_scalar_function(
         db,
@@ -320,13 +373,17 @@ pub fn register(db: *mut sqlite3) -> Result<()> {
         jiff_span_round,
         FunctionFlags::DETERMINISTIC,
     )?;
-    define_scalar_function(
-        db,
-        "jiff_span_format",
-        -1,
-        jiff_span_format,
-        FunctionFlags::DETERMINISTIC,
-    )?;
+    // 4 possible args,
+    for argc in [1, 3, 5, 7, 9] {
+        define_scalar_function(
+            db,
+            "jiff_span_format",
+            argc,
+            jiff_span_format,
+            FunctionFlags::DETERMINISTIC,
+        )?;
+    }
+
     define_scalar_function(
         db,
         "jiff_span_total",

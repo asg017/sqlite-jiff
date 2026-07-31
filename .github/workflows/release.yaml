@@ -13,11 +13,12 @@ jobs:
             target: linux-x86_64
           - os: ubuntu-22.04-arm
             target: linux-aarch64
-          - os: macos-13
+          # last Intel macOS image, supported until August 2027
+          - os: macos-15-intel
             target: macos-x86_64
           - os: macos-14
             target: macos-aarch64
-          - os: windows-2019
+          - os: windows-latest
             target: windows-x86_64
     runs-on: ${{ matrix.os }}
     steps:

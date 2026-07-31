@@ -1,0 +1,3 @@
+# solite docgen writes LF; a CRLF checkout on windows makes `make docs-check`
+# see every executed line as changed
+api-reference.md text eol=lf

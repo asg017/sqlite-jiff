@@ -1,4 +1,0 @@
-Source: ../snapshot.sql
-select jiff_date_day('2024-02-01');
----
-1

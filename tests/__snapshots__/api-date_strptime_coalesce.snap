@@ -1,0 +1,21 @@
+Source: ../api.sql
+select value, coalesce(
+    jiff_date_strptime('%m/%d/%y', value),
+    jiff_date_strptime('%m/%d/%Y', value),
+    jiff_date_strptime('%Y-%m-%d', value)
+  ) as result
+from json_each('["3/14/24","3/14/2024","2024-03-14"]');
+---
+{
+	 value: '3/14/24'
+	 result: '2024-03-14'
+}
+{
+	 value: '3/14/2024'
+	 result: '2024-03-14'
+}
+{
+	 value: '2024-03-14'
+	 result: '2024-03-14'
+}
+

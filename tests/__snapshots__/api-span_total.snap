@@ -1,0 +1,79 @@
+Source: ../api.sql
+with testcases(span) as (values ('2 minutes'), ('1 nanosecond'))
+select span, unit, jiff_span_total(span, unit)
+from testcases
+join units
+where unit not in ('year', 'week', 'month')
+order by span, units.rowid;
+---
+{
+	 span: '1 nanosecond'
+	 unit: 'nanosecond'
+	 jiff_span_total(span, unit): 1.0
+}
+{
+	 span: '1 nanosecond'
+	 unit: 'microsecond'
+	 jiff_span_total(span, unit): 0.001
+}
+{
+	 span: '1 nanosecond'
+	 unit: 'millisecond'
+	 jiff_span_total(span, unit): 1.0e-06
+}
+{
+	 span: '1 nanosecond'
+	 unit: 'second'
+	 jiff_span_total(span, unit): 1.0e-09
+}
+{
+	 span: '1 nanosecond'
+	 unit: 'minute'
+	 jiff_span_total(span, unit): 1.66666666666667e-11
+}
+{
+	 span: '1 nanosecond'
+	 unit: 'hour'
+	 jiff_span_total(span, unit): 2.77777777777778e-13
+}
+{
+	 span: '1 nanosecond'
+	 unit: 'day'
+	 jiff_span_total(span, unit): 1.15740740740741e-14
+}
+{
+	 span: '2 minutes'
+	 unit: 'nanosecond'
+	 jiff_span_total(span, unit): 120000000000.0
+}
+{
+	 span: '2 minutes'
+	 unit: 'microsecond'
+	 jiff_span_total(span, unit): 120000000.0
+}
+{
+	 span: '2 minutes'
+	 unit: 'millisecond'
+	 jiff_span_total(span, unit): 120000.0
+}
+{
+	 span: '2 minutes'
+	 unit: 'second'
+	 jiff_span_total(span, unit): 120.0
+}
+{
+	 span: '2 minutes'
+	 unit: 'minute'
+	 jiff_span_total(span, unit): 2.0
+}
+{
+	 span: '2 minutes'
+	 unit: 'hour'
+	 jiff_span_total(span, unit): 0.0333333333333333
+}
+{
+	 span: '2 minutes'
+	 unit: 'day'
+	 jiff_span_total(span, unit): 0.00138888888888889
+}
+

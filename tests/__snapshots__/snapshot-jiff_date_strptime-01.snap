@@ -1,4 +1,0 @@
-Source: ../snapshot.sql
-select jiff_date_strptime('%Y-%m-%d', '2024-01-13');
----
-'2024-01-13'

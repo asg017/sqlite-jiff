@@ -99,10 +99,39 @@ clean:
 
 SOLITE=solite
 
-test-snap:
-	TZ=America/Los_Angeles $(SOLITE) snap tests/snapshot.sql
+TESTS=tests/api.sql
 
-.PHONY: test-snap
+test-api: $(TARGET_LOADABLE)
+	TZ=America/Los_Angeles $(SOLITE) test $(TESTS)
+
+test-api-snapshot-update: $(TARGET_LOADABLE)
+	TZ=America/Los_Angeles $(SOLITE) test $(TESTS) --update
+
+test-api-review: $(TARGET_LOADABLE)
+	TZ=America/Los_Angeles $(SOLITE) test $(TESTS) --review
+
+test-api-watch: $(TARGET_LOADABLE)
+	watchexec \
+		--clear \
+		--stop-timeout=0 \
+		-w $(TARGET_LOADABLE) \
+		-w $(TESTS) \
+		-- \
+		make test-api-review
+
+.PHONY: test-api test-api-snapshot-update test-api-review test-api-watch
+
+SOLITE_DOCGEN=TZ=America/Los_Angeles $(SOLITE) docgen
+
+# Re-execute the ```sql code blocks in api-reference.md and inline their
+# results in place. Fails if any extension function is undocumented.
+docs: $(TARGET_LOADABLE)
+	$(SOLITE_DOCGEN) --extension $(TARGET_LOADABLE) api-reference.md -o api-reference.md
+
+docs-check: $(TARGET_LOADABLE)
+	$(SOLITE_DOCGEN) --extension $(TARGET_LOADABLE) api-reference.md --check
+
+.PHONY: docs docs-check
 
 
 Cargo.toml: VERSION

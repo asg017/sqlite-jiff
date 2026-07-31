@@ -1,0 +1,36 @@
+Source: ../api.sql
+select value, jiff_date_weekday(value)
+from json_each('[
+  "2024-01-13","2024-01-14","2024-01-15","2024-01-16",
+  "2024-01-17","2024-01-18","2024-01-19"
+]');
+---
+{
+	 value: '2024-01-13'
+	 jiff_date_weekday(value): 'Saturday'
+}
+{
+	 value: '2024-01-14'
+	 jiff_date_weekday(value): 'Sunday'
+}
+{
+	 value: '2024-01-15'
+	 jiff_date_weekday(value): 'Monday'
+}
+{
+	 value: '2024-01-16'
+	 jiff_date_weekday(value): 'Tuesday'
+}
+{
+	 value: '2024-01-17'
+	 jiff_date_weekday(value): 'Wednesday'
+}
+{
+	 value: '2024-01-18'
+	 jiff_date_weekday(value): 'Thursday'
+}
+{
+	 value: '2024-01-19'
+	 jiff_date_weekday(value): 'Friday'
+}
+

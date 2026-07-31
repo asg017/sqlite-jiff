@@ -1,4 +1,0 @@
-Source: ../snapshot.sql
-select jiff_time('1:30 pm');
----
-NULL

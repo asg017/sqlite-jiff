@@ -1,0 +1,49 @@
+Source: ../api.sql
+with testcases(date, span) as (
+  values
+    ('2024-01-01', '1 day'),
+    ('2024-01-01', '1 hour'),
+    ('2024-01-01', '1 minute'),
+    ('2024-01-01', '1 second'),
+    ('2024-01-01', '1 millisecond'),
+    ('2024-01-01', '1 microsecond'),
+    ('2024-01-01', '1 nanosecond')
+)
+select date, span, jiff_add(date, span) as result from testcases;
+---
+{
+	 date: '2024-01-01'
+	 span: '1 day'
+	 result: '2024-01-02T00:00:00'
+}
+{
+	 date: '2024-01-01'
+	 span: '1 hour'
+	 result: '2024-01-01T01:00:00'
+}
+{
+	 date: '2024-01-01'
+	 span: '1 minute'
+	 result: '2024-01-01T00:01:00'
+}
+{
+	 date: '2024-01-01'
+	 span: '1 second'
+	 result: '2024-01-01T00:00:01'
+}
+{
+	 date: '2024-01-01'
+	 span: '1 millisecond'
+	 result: '2024-01-01T00:00:00.001'
+}
+{
+	 date: '2024-01-01'
+	 span: '1 microsecond'
+	 result: '2024-01-01T00:00:00.000001'
+}
+{
+	 date: '2024-01-01'
+	 span: '1 nanosecond'
+	 result: '2024-01-01T00:00:00.000000001'
+}
+

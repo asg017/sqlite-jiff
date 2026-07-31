@@ -1,7 +1,0 @@
-Source: ../snapshot.sql
-select * 
-from jiff_datetime_series('2023-07-15 16:30:00', '0 seconds')
-limit 10;
----
-ERROR[1] SQL logic error
-jiff_datetime_series span cannot be zero

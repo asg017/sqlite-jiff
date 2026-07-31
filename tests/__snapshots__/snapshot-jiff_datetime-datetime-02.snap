@@ -1,4 +1,0 @@
-Source: ../snapshot.sql
-select jiff_datetime('2024-10-31', '00:00:00');
----
-'2024-10-31T00:00:00'

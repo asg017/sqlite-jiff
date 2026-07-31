@@ -1,0 +1,21 @@
+Source: ../api.sql
+with testcases(value) as (values ('1 hour 42 minutes 23 seconds 999 milliseconds'))
+select value, designator, jiff_span_format(value, 'designator', designator) as result
+from testcases, designators;
+---
+{
+	 value: '1 hour 42 minutes 23 seconds 999 milliseconds'
+	 designator: 'verbose'
+	 result: '1hour 42minutes 23seconds 999milliseconds'
+}
+{
+	 value: '1 hour 42 minutes 23 seconds 999 milliseconds'
+	 designator: 'short'
+	 result: '1hr 42mins 23secs 999msecs'
+}
+{
+	 value: '1 hour 42 minutes 23 seconds 999 milliseconds'
+	 designator: 'compact'
+	 result: '1h 42m 23s 999ms'
+}
+

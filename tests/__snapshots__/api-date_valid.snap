@@ -1,0 +1,17 @@
+Source: ../api.sql
+select value, jiff_date_valid(value)
+from json_each('["2024-01-02","2024-01-13 12:00:00","invalid"]');
+---
+{
+	 value: '2024-01-02'
+	 jiff_date_valid(value): 1
+}
+{
+	 value: '2024-01-13 12:00:00'
+	 jiff_date_valid(value): 1
+}
+{
+	 value: 'invalid'
+	 jiff_date_valid(value): 0
+}
+

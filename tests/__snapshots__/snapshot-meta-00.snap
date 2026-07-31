@@ -1,4 +1,0 @@
-Source: ../snapshot.sql
-select regex_replace('(v)(.*)', jiff_version(), '${1}REDACTED');
----
-'vREDACTED'

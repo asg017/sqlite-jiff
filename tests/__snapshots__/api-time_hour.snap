@@ -1,0 +1,19 @@
+Source: ../api.sql
+with test_cases(time) as (
+  values ('12:00:00'), ('23:59:59.999999'), ('01:30')
+)
+select time, jiff_time_hour(time) from test_cases;
+---
+{
+	 time: '12:00:00'
+	 jiff_time_hour(time): 12
+}
+{
+	 time: '23:59:59.999999'
+	 jiff_time_hour(time): 23
+}
+{
+	 time: '01:30'
+	 jiff_time_hour(time): 1
+}
+

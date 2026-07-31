@@ -1,0 +1,28 @@
+Source: ../api.sql
+with testcases(a, b) as (
+  values
+    ('2024-01-01', '2024-01-02'),
+    ('12:00:00', '13:59:59.999'),
+    ('2024-01-01 12:00:00', '2024-01-02 13:59:59.999')
+)
+select a, b, jiff_until(a, b), jiff_since(a, b) from testcases;
+---
+{
+	 a: '2024-01-01'
+	 b: '2024-01-02'
+	 jiff_until(a, b): '1 day'
+	 jiff_since(a, b): '1 day ago'
+}
+{
+	 a: '12:00:00'
+	 b: '13:59:59.999'
+	 jiff_until(a, b): '1 hour, 59 minutes, 59 seconds, 999 milliseconds'
+	 jiff_since(a, b): '1 hour, 59 minutes, 59 seconds, 999 milliseconds ago'
+}
+{
+	 a: '2024-01-01 12:00:00'
+	 b: '2024-01-02 13:59:59.999'
+	 jiff_until(a, b): '1 day, 1 hour, 59 minutes, 59 seconds, 999 milliseconds'
+	 jiff_since(a, b): '1 day, 1 hour, 59 minutes, 59 seconds, 999 milliseconds ago'
+}
+

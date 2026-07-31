@@ -1,0 +1,21 @@
+Source: ../api.sql
+with testcases(value) as (values ('1 hour 42 minutes 23 seconds 999 milliseconds'))
+select value, spacing, jiff_span_format(value, 'spacing', spacing) as result
+from testcases, spacings;
+---
+{
+	 value: '1 hour 42 minutes 23 seconds 999 milliseconds'
+	 spacing: 'between-units-and-designators'
+	 result: '1 h 42 m 23 s 999 ms'
+}
+{
+	 value: '1 hour 42 minutes 23 seconds 999 milliseconds'
+	 spacing: 'between-units'
+	 result: '1h 42m 23s 999ms'
+}
+{
+	 value: '1 hour 42 minutes 23 seconds 999 milliseconds'
+	 spacing: 'none'
+	 result: '1h42m23s999ms'
+}
+

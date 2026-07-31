@@ -10,28 +10,66 @@ jobs:
     strategy:
       matrix:
         include:
+          # `solite: true` runs make test-api + make docs-check with a
+          # PyPI-installed solite. Commented out where solite has no usable
+          # wheel yet — see https://github.com/asg017/sqlite-tg/issues/5
           - os: ubuntu-22.04
             target: linux-x86_64
+            # needs a solite wheel usable on glibc 2.35; covered by the
+            # test-solite-linux job below until then
+            # solite: true
           - os: ubuntu-22.04-arm
             target: linux-aarch64
+            # no linux-aarch64 solite wheel yet
+            # solite: true
           - os: macos-13
             target: macos-x86_64
+            # no macos-x86_64 solite wheel yet
+            # solite: true
           - os: macos-14
             target: macos-aarch64
+            solite: true
           - os: windows-2019
             target: windows-x86_64
+            # win_amd64 wheel exists, but solite+make unverified on windows
+            # shells
+            # solite: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - uses: astral-sh/setup-uv@v5
       - run: make loadable
-      - run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/asg017/solite/releases/download/0.0.1-alpha.9/solite-cli-installer.sh | sh
-      - run: make test-snap
-        env:
-          TZ: America/Los_Angeles
+      - name: install solite
+        if: matrix.solite
+        run: |
+          uv tool install solite
+          echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+      - run: make test-api
+        if: matrix.solite
+      - run: make docs-check
+        if: matrix.solite
       - uses: actions/upload-artifact@v4
         with:
           name: sqlite-jiff-${{ matrix.target }}-extension
           path: dist/*
+  # linux solite coverage lives here: the extension artifacts build on
+  # ubuntu-22.04 for glibc compatibility, but solite's manylinux_2_39 wheel
+  # needs ubuntu-24.04+
+  test-solite-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: astral-sh/setup-uv@v5
+      - run: make loadable
+      - name: install solite
+        run: |
+          uv tool install solite
+          echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+      - run: make test-api
+      - run: make docs-check
